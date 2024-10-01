@@ -4,6 +4,7 @@ import de.cristelknight.doapi.Util;
 import de.cristelknight.doapi.common.block.FacingBlock;
 import de.cristelknight.doapi.common.block.StackableEatableBlock;
 import dev.architectury.registry.registries.DeferredRegister;
+import dev.architectury.registry.registries.DeferredSupplier;
 import dev.architectury.registry.registries.Registrar;
 import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.core.Holder;
@@ -182,6 +183,10 @@ public class ObjectRegistry {
     static Item.Properties getSettings() {
         return getSettings(settings -> {
         });
+    }
+
+    private static Item.Properties getFoodItemSettings(int nutrition, float saturationMod, DeferredSupplier<MobEffect> effect, int duration) {
+        return new Item.Properties().food(new FoodProperties.Builder().nutrition(nutrition).saturationModifier(saturationMod).effect(new MobEffectInstance(MobEffectRegistry.getHolder(effect), duration), 1.0f).build());
     }
 
     private static Item.Properties getFoodItemSettings(int nutrition, float saturationMod, Holder<MobEffect> effect, int duration) {

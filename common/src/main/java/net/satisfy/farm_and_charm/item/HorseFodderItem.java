@@ -34,7 +34,7 @@ public class HorseFodderItem extends Item {
                     }
                     return InteractionResult.sidedSuccess(entity.getCommandSenderWorld().isClientSide);
                 }
-                horse.addEffect(new MobEffectInstance(MobEffectRegistry.HORSE_FODDER, 6000, 0));
+                horse.addEffect(new MobEffectInstance(MobEffectRegistry.getHolder(MobEffectRegistry.HORSE_FODDER), 6000, 0));
                 horse.heal(10.0F);
                 if (!player.getAbilities().instabuild) {
                     stack.shrink(1);

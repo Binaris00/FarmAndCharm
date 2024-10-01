@@ -6,7 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.BlockItem;
@@ -86,16 +86,14 @@ public class SiloBlock extends FacingBlock implements EntityBlock {
     }
 
     @Override
-    public @NotNull InteractionResult useWithoutItem(BlockState blockState, Level level, BlockPos blockPos, Player player, BlockHitResult blockHitResult) {
-        InteractionHand interactionHand = blockHitResult.getDirection() == Direction.UP ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-        ItemStack itemStack = player.getItemInHand(interactionHand);
+    protected @NotNull ItemInteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
         if (level.isClientSide)
-            return itemStack.isEmpty() || isDryItem(level, itemStack) ? InteractionResult.SUCCESS : isSilo(itemStack) || player.isDiscrete() ? InteractionResult.PASS : InteractionResult.CONSUME;
+            return itemStack.isEmpty() || isDryItem(level, itemStack) ? ItemInteractionResult.SUCCESS : isSilo(itemStack) || player.isDiscrete() ? ItemInteractionResult.FAIL : ItemInteractionResult.CONSUME;
         BlockEntity be = level.getBlockEntity(blockPos);
         if (be instanceof SiloBlockEntity siloBE) {
             SiloBlockEntity siloController = siloBE.getControllerBE();
             if (siloController == null)
-                return InteractionResult.PASS;
+                return ItemInteractionResult.FAIL;
             if (itemStack.isEmpty()) {
                 if (player.isDiscrete()) {
                     ItemStack returnStack = siloBE.tryRemoveItem();
@@ -104,31 +102,35 @@ public class SiloBlock extends FacingBlock implements EntityBlock {
                 } else {
                     siloController.open(!blockState.getValue(OPEN));
                 }
-                return InteractionResult.SUCCESS;
+                return ItemInteractionResult.SUCCESS;
             } else if (isDryItem(level, itemStack) && siloController.tryAddItem(itemStack))
-                return InteractionResult.SUCCESS;
+                return ItemInteractionResult.SUCCESS;
         }
-        return isSilo(itemStack) || player.isDiscrete() ? InteractionResult.PASS : InteractionResult.CONSUME;
+        return isSilo(itemStack) || player.isDiscrete() ? ItemInteractionResult.FAIL : ItemInteractionResult.CONSUME;
     }
 
     @Override
     public void onPlace(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean notify) {
-        if (oldState.getBlock() == state.getBlock())
+        if (oldState.getBlock() == state.getBlock()) {
             return;
-        if (notify)
+        }
+        if (notify) {
             return;
+        }
 
         BlockEntity be = world.getBlockEntity(pos);
-        if (be instanceof SiloBlockEntity siloBlockEntity)
+        if (be instanceof SiloBlockEntity siloBlockEntity) {
             siloBlockEntity.updateConnectivity();
+        }
     }
 
     @Override
     public void onRemove(BlockState blockState, Level level, BlockPos blockPos, BlockState newState, boolean moved) {
         if (blockState.hasBlockEntity() && (blockState.getBlock() != newState.getBlock() || !newState.hasBlockEntity())) {
             BlockEntity be = level.getBlockEntity(blockPos);
-            if (!(be instanceof SiloBlockEntity siloBE))
+            if (!(be instanceof SiloBlockEntity siloBE)) {
                 return;
+            }
             Containers.dropContents(level, blockPos, siloBE);
             level.removeBlockEntity(blockPos);
             ConnectivityHandler.splitMulti(siloBE);

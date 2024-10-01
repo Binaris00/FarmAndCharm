@@ -21,6 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.satisfy.farm_and_charm.FarmAndCharm;
 import net.satisfy.farm_and_charm.block.CraftingBowlBlock;
 import net.satisfy.farm_and_charm.recipe.CraftingBowlRecipe;
 import net.satisfy.farm_and_charm.registry.EntityTypeRegistry;
@@ -173,6 +174,14 @@ public class CraftingBowlBlockEntity extends RandomizableContainerBlockEntity im
                     List<RecipeHolder<CraftingBowlRecipe>> recipes = recipeManager.getAllRecipesFor(RecipeTypeRegistry.CRAFTING_BOWL_RECIPE_TYPE.get());
                     Optional<CraftingBowlRecipe> recipe = Optional.ofNullable(getRecipe(recipes, stacks));
 
+                    if(recipes.isEmpty()) {
+                        FarmAndCharm.LOGGER.error("No recipes found for Crafting Bowl");
+                    }
+
+                    if(recipe.isEmpty()) {
+                        FarmAndCharm.LOGGER.error("No recipe found for Crafting Bowl");
+                    }
+
                     if (stirred == CraftingBowlBlock.STIRS_NEEDED && recipe.isPresent()) {
                         recipe.get().getIngredients().forEach(ingredient -> {
                             int size = blockEntity.getItems().size();
@@ -214,8 +223,7 @@ public class CraftingBowlBlockEntity extends RandomizableContainerBlockEntity im
             CraftingBowlRecipe recipe = recipeHolder.value();
             for (Ingredient ingredient : recipe.getIngredients()) {
                 boolean ingredientFound = false;
-                for (int slotIndex = 1; slotIndex < inventory.size(); slotIndex++) {
-                    ItemStack slotItem = inventory.get(slotIndex);
+                for (ItemStack slotItem : inventory) {
                     if (ingredient.test(slotItem)) {
                         ingredientFound = true;
                         break;

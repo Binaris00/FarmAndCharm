@@ -127,30 +127,35 @@ public class SiloBlockEntity extends BlockEntity implements IMultiBlockEntityCon
 
     @Override
     public void tick(Level level, BlockPos blockPos, BlockState blockState, SiloBlockEntity blockEntity) {
-        if (this.level == null)
+        if (this.level == null) {
             this.level = level;
-        if (updateConnectivity)
+        }
+        if (updateConnectivity) {
             updateConnectivity();
+        }
         dry();
         tryDropFinish(blockState);
     }
 
     public void updateConnectivity() {
         updateConnectivity = false;
-        if (level == null || level.isClientSide)
+        if (level == null || level.isClientSide) {
             return;
-        if (!isController())
+        }
+        if (!isController()) {
             return;
+        }
         ConnectivityHandler.formMulti(this);
     }
 
     public boolean tryAddItem(ItemStack itemStack) {
         boolean added = false;
-        for (int slot = 0; !itemStack.isEmpty() && slot < this.getCapacity(); slot++)
+        for (int slot = 0; !itemStack.isEmpty() && slot < this.getCapacity(); slot++) {
             if (this.getItem(slot).isEmpty()) {
                 this.setItem(slot, itemStack.split(1));
                 added = true;
             }
+        }
         return added;
     }
 
@@ -169,7 +174,7 @@ public class SiloBlockEntity extends BlockEntity implements IMultiBlockEntityCon
         if (SiloBlock.isSilo(state) && level != null) {
             state = state.setValue(SiloBlock.BOTTOM, getController().getY() == getBlockPos().getY());
             state = state.setValue(SiloBlock.TOP, getController().getY() + height - 1 == getBlockPos().getY());
-            state = state.setValue(SiloBlock.OPEN, level.getBlockState(getController()).getValue(BlockStateProperties.OPEN));
+            state = state.setValue(SiloBlock.OPEN, level.getBlockState(getController()).getValue(SiloBlock.OPEN));
             state = state.setValue(BlockStateProperties.HORIZONTAL_FACING, level.getBlockState(getController()).getValue(BlockStateProperties.HORIZONTAL_FACING));
             level.setBlock(worldPosition, state, 6);
         }
@@ -213,8 +218,8 @@ public class SiloBlockEntity extends BlockEntity implements IMultiBlockEntityCon
             if (recipe.isPresent() && !freshStack.isEmpty()) {
                 int dryTime = this.times[fresh];
                 dryTime++;
-                if (dryTime >= DRY_TIME)
-                    for (int finish = MAX_CAPACITY; finish < MAX_CAPACITY + this.getCapacity(); finish++)
+                if (dryTime >= DRY_TIME) {
+                    for (int finish = MAX_CAPACITY; finish < MAX_CAPACITY + this.getCapacity(); finish++) {
                         if (this.getItem(finish).isEmpty()) {
                             ItemStack finishStack = this.removeItem(fresh, freshStack.getCount());
                             ItemStack outputStack = recipe.get().value().getResultItem(level.registryAccess()).copyWithCount(finishStack.getCount());
@@ -222,6 +227,8 @@ public class SiloBlockEntity extends BlockEntity implements IMultiBlockEntityCon
                             dryTime = 0;
                             break;
                         }
+                    }
+                }
                 this.times[fresh] = dryTime;
             }
         }

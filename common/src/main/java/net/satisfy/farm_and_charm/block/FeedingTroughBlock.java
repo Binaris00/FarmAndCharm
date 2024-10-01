@@ -8,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -55,20 +56,35 @@ public class FeedingTroughBlock extends LineConnectingBlock implements EntityBlo
         builder.add(SIZE);
     }
 
+//    @Override
+//    public @NotNull InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+//        ItemStack itemStack = player.getItemInHand(hand);
+//        if (!world.isClientSide) {
+//            int size = state.getValue(SIZE);
+//            if (size < 4) {
+//                world.setBlock(pos, state.setValue(SIZE, size + 1), 3);
+//                if (!player.getAbilities().instabuild) {
+//                    itemStack.shrink(1);
+//                }
+//                return InteractionResult.SUCCESS;
+//            }
+//        }
+//        return InteractionResult.PASS;
+//    }
+
     @Override
-    public @NotNull InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        ItemStack itemStack = player.getItemInHand(hand);
-        if (!world.isClientSide && hand == InteractionHand.MAIN_HAND && itemStack.is(ItemTags.VILLAGER_PLANTABLE_SEEDS)) {
-            int size = state.getValue(SIZE);
+    protected @NotNull ItemInteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult) {
+        if (!level.isClientSide && interactionHand == InteractionHand.MAIN_HAND && itemStack.is(ItemTags.VILLAGER_PLANTABLE_SEEDS)) {
+            int size = blockState.getValue(SIZE);
             if (size < 4) {
-                world.setBlock(pos, state.setValue(SIZE, size + 1), 3);
+                level.setBlock(blockPos, blockState.setValue(SIZE, size + 1), 3);
                 if (!player.getAbilities().instabuild) {
                     itemStack.shrink(1);
                 }
-                return InteractionResult.SUCCESS;
+                return ItemInteractionResult.SUCCESS;
             }
         }
-        return InteractionResult.PASS;
+        return ItemInteractionResult.FAIL;
     }
 
     @Override
